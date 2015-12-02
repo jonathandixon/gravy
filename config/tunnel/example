@@ -1,0 +1,5 @@
+#!/bin/sh
+LOCAL_PORT=1520
+DESTINATION=example.com:1521
+HOST=proxy.com
+USER=`id -u -n`

@@ -1,0 +1,51 @@
+#!/bin/sh
+function usage {
+    echo_info ""
+    echo_info "Usage:"
+    echo_info ""
+    echo_info "  1. With a predefined tunnel config in $GRAVY_HOME/config/tunnel/"
+    echo_info "      gravy tunnel {TUNNEL_CONFIG_FILE}"
+    echo_info ""
+    echo_info "  2. Custom options"
+    echo_info "      gravy tunnel {LOCAL_PORT} {DESTINATION} {HOST} [{USER}]"
+    echo_info ""
+    echo_info "  3. To kill a running tunnel"
+    echo_info "      gravy tunnel {LOCAL_PORT}"
+    echo_info ""
+    exit 1
+}
+
+# Check that GRAVY_HOME is set.
+[[ -z $GRAVY_HOME ]] && echo_error "Must consume with gravy." && usage
+
+# No Parameters, invoke usage.
+[[ $# -eq 0 ]] && usage
+
+# Check if the first parameter is a tunnel config file
+if [ -f "$GRAVY_HOME/config/tunnel/$1" ]; then
+    # Load the config file.
+    . "$GRAVY_HOME/config/tunnel/$1"
+else
+    # Use the CLI Parameters
+    LOCAL_PORT=$1
+    DESTINATION=$2
+    HOST=$3
+    USER=$4
+    : ${USER:=`id -u -n`} # Default to current user.
+fi
+
+# Check that a port was provided as a number.
+! [[ $LOCAL_PORT =~ ^-?[0-9]+$ ]] && echo_error "LOCAL PORT must be a number!" && usage
+
+# The regex uses [s] to prent this command from appearing in
+# the list of processes to kill.
+echo_info "Stopping any tunnel on port $LOCAL_PORT..."
+ps aux | grep "[s]sh.*$LOCAL_PORT:" | awk '{print $2}' | xargs kill
+echo_info "Sucessfully killed the tunnel."
+
+# Check that connection information was provided.
+[[ -z $DESTINATION ]] || [[ -z $HOST ]] && exit 0
+
+echo_info "Starting tunnel to $DESTINATION on $LOCAL_PORT..."
+ssh -N -f -L $LOCAL_PORT:$DESTINATION $USER@$HOST
+echo_info "Done."

@@ -1,0 +1,31 @@
+#!/bin/sh
+function usage {
+    script=`basename "$0"`
+    echo Usage:
+    echo "    gravy {COMMAND} [{OPTIONS}]"
+    exit 1
+}
+
+# No Parameters, invoke usage.
+[[ $# -eq 0 ]] && usage
+
+COMMAND=$1
+
+# Set the GRAVY_HOME
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+
+GRAVY_HOME="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
+
+shift # past the command
+
+# Load Common Libraries
+. $GRAVY_HOME/lib/common/logger
+
+# Run the command
+. $GRAVY_HOME/lib/$COMMAND $@
