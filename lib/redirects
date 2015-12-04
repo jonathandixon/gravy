@@ -1,0 +1,27 @@
+#!/bin/sh
+function usage {
+    echo_info ""
+    echo_info "Usage:"
+    echo_info ""
+    echo_info "    gravy redirects {URL}"
+    echo_info ""
+    exit 1
+}
+
+# Check that GRAVY_HOME is set.
+[[ -z $GRAVY_HOME ]] && echo_error "Must consume with gravy." && usage
+
+# No Parameters, invoke usage.
+[[ $# -eq 0 ]] && usage
+
+URL=$1
+LINE_NUM=0
+while read LINE; do
+    LINE_NUM=$(( $LINE_NUM + 1 ))
+    LINE_VAL=`cut -d ' ' -f2 <<< "$LINE"`
+    if [ $(( $LINE_NUM % 2 )) == 1 ]; then
+        echo_info "$URL (${GREEN}${LINE_VAL}${NC})"
+    else
+        URL="${GREEN}-->${NC} ${LINE_VAL%?}"
+    fi
+done <<< "$(curl -LI $URL 2>&1 | egrep '(HTTP/1\.1|Location:)')"

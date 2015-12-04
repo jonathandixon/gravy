@@ -24,6 +24,7 @@ Make sure the `gravy` script is executable.
 ## Commands
 
 - `tunnel` - Kill/Create an SSH Tunnel.
+- `redirects` - Get a list of redirects for a URL.
 
 ## Configurations
 
